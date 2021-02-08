@@ -3,3 +3,9 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
 }
+.ingredients img {
+    width: 350px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+  }
+  

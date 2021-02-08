@@ -1,46 +1,81 @@
+
 // search button and meal item start..
+
 const searchBtn = document.getElementById("search-food-button");
 searchBtn.addEventListener('click', getFoodData = food => {
     let getSearchInputResult = document.getElementById('search-food-input').value;
-    fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?i=${getSearchInputResult}`)
+    const url = `https://www.themealdb.com/api/json/v1/1/search.php?s=${getSearchInputResult}`
+    fetch(url)
     .then(response => response.json())
     .then(data => {
-        const foodItem = document.getElementById("food-item");
-        let foodlist = "";
+         const mealContainer = document.getElementById('meal-container');
+             mealContainer.innerHTML = '';
         if(data.meals){
             data.meals.forEach(meal => {
-                foodlist += `
-                <div class="card" style="width: 18rem;">
-                       <img src= "${meal.strMealThumb}" class="card-img-top" alt="...">
-                   <div class="card-body">
-                       <p class="card-text">${meal.strMeal}</p>
-                   </div>
-                   <div>
-                   <button onclick="getFoodIngredient('${meal.strMeal}')">details</button>
-                   </div>
-                </div>`;
-            });
+                    const mealDiv = document.createElement('div');
+                    const ingredients = meal.strInstructions.replace(/(\r\n|\r|\n)/g, '<br>');
+                    console.log(ingredients);
+                    mealDiv.className = 'single-result col-md-3 foodImg align-items-center my-3 p-3';
+                    mealDiv.innerHTML = `
+                    <div onclick="getIngredient('${meal.strMeal}','${meal.idMeal}', '${meal.strMealThumb}', '${ingredients}')">
+                        
+                    <div>
+                        <div class="">
+                        <div class="d-flex justify-content-center">
+                             <img src=${meal.strMealThumb} class="card-img-top" alt="...">
+                        </div>
+                        <div class="card-body text-center">
+                             <b class="card-text">${meal.strMeal}</b>
+                        </div>
+                        </div>
+                
+                        </div>
+                        <div class="col-md-3 text-md-right text-center">
+                        </div>
+                    </div>`;
+                    mealContainer.appendChild(mealDiv);
+                });
         } 
         else{
-            foodlist = "sorry. we don't have this type of food";
+            data.meals = "sorry. we don't have this type of food";
         }
-        foodItem.innerHTML = foodlist;
-    });
+    })
 });
+
 // search button and meal item end..
 
-// ingredient  start..
-const getFoodIngredient =  ingredient => {
-    const url = `https://www.themealdb.com/api/json/v1/1/list.php?i=${ingredient}`
-    fetch(url)
-    .then(res => res.json())
-    .then(data => ingredientDetails(data[0]));
+
+
+// ingredient item start..
+
+const getIngredient = async (strMeal, idMeal, strMealThumb, ingredients) => {
+    const url = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${idMeal}`;
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        displayIngredient(idMeal, strMeal, strMealThumb, ingredients);
+    }
+    catch (error) {
+        displayError('Sorry! I failed to load Ingredient, Please try again later!!!')
+    }
 }
-const ingredientDetails = foodDetails => {
-    const foodIngredientDetails = document.getElementById("food-details");
-    foodIngredientDetails.innerHTML = `
-    <h1>${foodDetails.idIngredient}</h1>
-    <img src="${foodDetails.strMealThumb}"
-    `;
+
+
+const displayIngredient = (Ingredient, strMeal, strMealThumb, ingredients) => {
+    const ingredientDiv = document.getElementById('meal-container');
+    ingredientDiv.innerHTML = `<div  class=" mx-auto py-4">
+    <div class="ingredients">
+    <img src="${strMealThumb}" alt=""> <br>
+        <h4 align=left>${strMeal}</h4>       
+        <p align=left>${ingredients}</p>       
+    </div>
+`;
 }
-// ingredient  end..
+
+
+const displayError = error => {
+    const errorTag = document.getElementById('error-message');
+    errorTag.innerText = error;
+}
+
+// ingredient item start..
